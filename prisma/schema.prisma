@@ -1,0 +1,288 @@
+// TenderPulse - Database Schema
+// ZAInnovate Technologies (Pty) Ltd
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum PlanTier {
+  FREE
+  PRO
+  BUSINESS
+}
+
+enum SubscriptionStatus {
+  INACTIVE
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+}
+
+enum BillingInterval {
+  MONTHLY
+  YEARLY
+}
+
+enum TenderStatus {
+  OPEN
+  CLOSING_SOON
+  CLOSED
+  AWARDED
+  CANCELLED
+}
+
+enum BidPipelineStatus {
+  INTERESTED
+  PREPARING_DOCS
+  SUBMITTED
+  WON
+  LOST
+  ARCHIVED
+}
+
+enum AlertFrequency {
+  INSTANT
+  DAILY
+  WEEKLY
+}
+
+model User {
+  id                      String                  @id @default(cuid())
+  name                    String?
+  email                   String                  @unique
+  emailVerified           DateTime?
+  image                   String?
+  phone                   String?                 // For WhatsApp alerts (+27...)
+  companyName             String?
+  csdNumber               String?                 // SA Central Supplier Database e.g. MAAA0012345
+  bbbEeLevel              Int?                    // 1 to 8
+  province                String?                 // Primary operating province
+  role                    Role                    @default(USER)
+  createdAt               DateTime                @default(now())
+  updatedAt               DateTime                @updatedAt
+
+  // NextAuth relations
+  accounts                Account[]
+  sessions                Session[]
+
+  // App relations
+  subscription            Subscription?
+  alerts                  TenderAlert[]
+  savedTenders            SavedTender[]
+  tenderMatches           TenderMatch[]
+  notificationPreference  NotificationPreference?
+  paymentHistory          PaymentHistory[]
+
+  @@index([email])
+}
+
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String? @db.Text
+  access_token       String? @db.Text
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String? @db.Text
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Subscription {
+  id                      String              @id @default(cuid())
+  userId                  String              @unique
+  user                    User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tier                    PlanTier            @default(FREE)
+  status                  SubscriptionStatus  @default(INACTIVE)
+  interval                BillingInterval     @default(MONTHLY)
+  paystackCustomerCode    String?
+  paystackSubscriptionCode String?
+  paystackEmailToken      String?
+  currentPeriodStart      DateTime?
+  currentPeriodEnd        DateTime?
+  cancelAtPeriodEnd       Boolean             @default(false)
+  createdAt               DateTime            @default(now())
+  updatedAt               DateTime            @updatedAt
+
+  payments                PaymentHistory[]
+
+  @@index([userId])
+  @@index([status])
+}
+
+model TenderCategory {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  icon        String?
+  createdAt   DateTime @default(now())
+  tenders     Tender[]
+}
+
+model Tender {
+  id                   String            @id @default(cuid())
+  referenceNumber      String            @unique // e.g. "SCMU5-24/25-0012"
+  title                String
+  description          String            @db.Text
+  categoryId           String
+  category             TenderCategory    @relation(fields: [categoryId], references: [id])
+  issuingEntity        String            // e.g. "Eastern Cape Dept of Public Works"
+  department           String?           // National / Provincial / Municipality / SOE
+  province             String            // Eastern Cape, Gauteng, etc.
+  cidbGrading          String?           // e.g. "6GB", "7CE", "None"
+  estimatedValue       Decimal?          @db.Decimal(15, 2)
+  estimatedValueText   String?           // e.g. "R5,000,000 - R10,000,000"
+  briefingSessionDate  DateTime?
+  briefingSessionVenue String?           @db.Text
+  isBriefingCompulsory Boolean           @default(false)
+  closingDate          DateTime
+  status               TenderStatus      @default(OPEN)
+  documentUrls         String[]          // Attached RFP / SBD / BoQ links
+  originalUrl          String?           // Link to eTenders or issuing portal
+  contactPerson        String?
+  contactEmail         String?
+  contactPhone         String?
+  source               String            @default("eTenders") // "eTenders", "CIDB", "Provincial"
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+
+  savedBy              SavedTender[]
+  matches              TenderMatch[]
+
+  @@index([province])
+  @@index([categoryId])
+  @@index([closingDate])
+  @@index([status])
+  @@index([referenceNumber])
+}
+
+model TenderAlert {
+  id                  String         @id @default(cuid())
+  userId              String
+  user                User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name                String         // e.g. "Gauteng IT & Security Contracts"
+  keywords            String[]       // e.g. ["cybersecurity", "hardware", "cabling"]
+  categories          String[]       // Category slugs
+  provinces           String[]       // "Eastern Cape", "Gauteng", etc.
+  minEstimatedValue   Decimal?       @db.Decimal(15, 2)
+  maxEstimatedValue   Decimal?       @db.Decimal(15, 2)
+  cidbGradingRequired String?        // "1GB", "4CE", etc.
+  sendEmail           Boolean        @default(true)
+  sendWhatsapp        Boolean        @default(false)
+  frequency           AlertFrequency @default(INSTANT)
+  isActive            Boolean        @default(true)
+  lastTriggeredAt     DateTime?
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+
+  matches             TenderMatch[]
+
+  @@index([userId])
+}
+
+model SavedTender {
+  id           String            @id @default(cuid())
+  userId       String
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenderId     String
+  tender       Tender            @relation(fields: [tenderId], references: [id], onDelete: Cascade)
+  notes        String?           @db.Text
+  status       BidPipelineStatus @default(INTERESTED)
+  reminderDate DateTime?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  @@unique([userId, tenderId])
+  @@index([userId])
+  @@index([tenderId])
+}
+
+model TenderMatch {
+  id         String      @id @default(cuid())
+  alertId    String
+  alert      TenderAlert @relation(fields: [alertId], references: [id], onDelete: Cascade)
+  tenderId   String
+  tender     Tender      @relation(fields: [tenderId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  score      Float       @default(1.0)
+  isRead     Boolean     @default(false)
+  notifiedAt DateTime?
+  createdAt  DateTime    @default(now())
+
+  @@unique([alertId, tenderId])
+  @@index([userId])
+  @@index([isRead])
+}
+
+model NotificationPreference {
+  id                  String   @id @default(cuid())
+  userId              String   @unique
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  emailEnabled        Boolean  @default(true)
+  whatsappEnabled     Boolean  @default(false)
+  weeklyDigest        Boolean  @default(true)
+  tenderDeadlines     Boolean  @default(true)
+  awardAnnouncements  Boolean  @default(true)
+  marketingUpdates    Boolean  @default(false)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+model PaymentHistory {
+  id               String       @id @default(cuid())
+  subscriptionId   String?
+  subscription     Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  userId           String
+  user             User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  paystackRef      String       @unique
+  amount           Decimal      @db.Decimal(10, 2)
+  currency         String       @default("ZAR")
+  status           String       // "success", "failed", "pending"
+  channel          String?      // "card", "eft", "bank_transfer"
+  paidAt           DateTime?
+  receiptUrl       String?
+  createdAt        DateTime     @default(now())
+
+  @@index([userId])
+  @@index([paystackRef])
+}
