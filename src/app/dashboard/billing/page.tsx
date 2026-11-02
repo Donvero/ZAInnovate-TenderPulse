@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   CreditCard,
@@ -44,7 +44,7 @@ const MOCK_INVOICES = [
   },
 ];
 
-export default function BillingPage() {
+function BillingContent() {
   const searchParams = useSearchParams();
   const paymentVerified = searchParams.get("payment_status") === "verified";
 
@@ -261,5 +261,13 @@ export default function BillingPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function BillingPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-slate-400">Loading billing dashboard...</div>}>
+      <BillingContent />
+    </Suspense>
   );
 }

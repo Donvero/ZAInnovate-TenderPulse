@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   Search,
@@ -20,7 +20,7 @@ import TenderCard from "@/components/dashboard/TenderCard";
 import TenderDetailModal from "@/components/dashboard/TenderDetailModal";
 import { MOCK_TENDERS, TenderItem } from "@/lib/mock-data";
 
-export default function TendersBrowserPage() {
+function TendersBrowserContent() {
   const searchParams = useSearchParams();
 
   const [filters, setFilters] = useState({
@@ -157,5 +157,13 @@ export default function TendersBrowserPage() {
         />
       )}
     </div>
+  );
+}
+
+export default function TendersBrowserPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-slate-400">Loading tenders browser...</div>}>
+      <TendersBrowserContent />
+    </Suspense>
   );
 }

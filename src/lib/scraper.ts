@@ -1,7 +1,6 @@
 // eTenders and South African Government Tender Scraper
 // ZAInnovate Technologies (Pty) Ltd - TenderPulse
 
-import * as cheerio from "cheerio";
 import { SA_PROVINCES, SA_TENDER_CATEGORIES } from "./utils";
 import { MOCK_TENDERS, TenderItem } from "./mock-data";
 import { prisma } from "./db";

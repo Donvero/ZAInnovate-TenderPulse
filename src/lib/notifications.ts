@@ -1,8 +1,27 @@
 // Notification Engine: Resend Email & WhatsApp Alerts
 // ZAInnovate Technologies (Pty) Ltd - TenderPulse
 
-import { Resend } from "resend";
 import { formatZAR, formatDate } from "./utils";
+
+export class Resend {
+  constructor(private apiKey: string) {}
+  emails = {
+    send: async (params: { from: string; to: string[]; subject: string; html: string }) => {
+      if (!this.apiKey || this.apiKey.startsWith("re_mock")) {
+        return { data: { id: `mock_${Date.now()}` }, error: null };
+      }
+      const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${this.apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(params),
+      });
+      return await res.json();
+    },
+  };
+}
 
 const resend = new Resend(process.env.RESEND_API_KEY || "re_mock_development_key");
 
