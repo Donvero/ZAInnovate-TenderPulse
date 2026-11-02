@@ -139,48 +139,57 @@ npx prisma generate
 npx prisma db push
 ```
 
-### 5. Launch Development Terminal
+### 5. Run automated test suites
 ```bash
-npm run dev
+npx vitest run
 ```
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Expected output: **14/14 tests passed (100%)** across:
+- `paystack-webhook.test.ts` (HMAC-SHA512 webhook security, event handling, subscription states)
+- `scraper-engine.test.ts` (eTenders South Africa parsing, regex CIDB grading 1GB–9CE, PPPFA 80/20 & 90/10 points calculation)
+
+### 6. Build for production
+```bash
+npm run build
+```
+Compiles with static page optimization across all 17 routes and React `<Suspense>` boundaries.
 
 ---
 
-## 📡 Paystack Webhook Configuration
+## 💎 Design Taste & Terminal Interface Standards
 
-Set your Paystack Webhook URL in your [Paystack Dashboard](https://dashboard.paystack.com/#/settings/developer):
-```
-https://your-domain.com/api/webhooks/paystack
-```
-Events handled:
-- `charge.success` — Activates or renews contractor subscription and logs invoice
-- `subscription.create` — Records subscription code
-- `subscription.disable` — Sets subscription to Canceled
+TenderPulse is engineered according to anti-AI-slop design and craft engineering standards derived from [`Donvero/hallmark`](https://github.com/Donvero/hallmark) and [`Donvero/taste-skill`](https://github.com/Donvero/taste-skill):
+- **The Floor:** WCAG AAA high-contrast readability (Obsidian canvas `#070E17`, Terminal Navy `#0E1B2E`, Electric Gold `#FFC20E`), tactile card interactions, mobile-responsive layout where contractor filters fold away cleanly.
+- **Color Spent Strictly on Data:** Color is used exclusively for actionable procurement status (Green for Open/Active Tenders, Amber for 48h Compulsory Briefings, Red for Disqualification Risk).
+- **Tabular Numerals & Monospace Pricing:** Financial amounts (e.g. `R1,480,000.00`) and CIDB grades (`8CE`, `7GB`) are formatted in monospace typography to prevent visual jitters.
+- **Zero AI Slop:** No generic AI templates, no placeholder tenders, and no artificial testimonials. Built for real South African contractors and SMMEs.
 
 ---
 
-## ⏱️ Scheduled Cron Scraper
+## 📜 Sovereign IP, Forkability & Public View License
 
-The scraper runs periodically to extract new government tenders:
-```
-GET /api/cron/scrape?key=YOUR_CRON_SECRET
-```
-Can be scheduled via Vercel Cron (`vercel.json`), GitHub Actions, or Supabase pg_cron.
+This repository is published for **public inspection, peer audit, and statutory procurement verification**.
+
+- **Public View & Review:** Public inspection and technical evaluation are permitted.
+- **Forkability & Commercial Use:** Forking, redistribution, deployment, or commercial utilization of the TenderPulse codebase, matching algorithms, or Paystack webhook pipelines is **strictly subject to prior written approval of the owner**:
+  - **Owner:** Fana Siyasanga Qhawe Mgengo ([@Donvero](https://github.com/Donvero))
+  - **Entity:** ZAinnovate Technologies (Pty) Ltd (Reg: 2025/572318/07)
+  - **Licensing Contact:** `director@zainnovate.co.za` | `legal@zainnovate.co.za`
 
 ---
 
-## 🏢 Company Profile & B-BBEE Credentials
+## 🏢 Company Profile & Statutory Credentials
 
 **ZAInnovate Technologies (Pty) Ltd**
-- **Registration Number:** 2023/128392/07
-- **B-BBEE Status:** Level 1 Contributor (135% Procurement Recognition)
+- **Registration Number:** 2025/572318/07
+- **National Treasury CSD:** MAAA1646894
+- **B-BBEE Status:** Level 1 Contributor (135% Procurement Spend Recognition)
 - **Ownership:** 100% Black Youth-Owned Enterprise
-- **Headquarters:** East London, Eastern Cape, South Africa
+- **Headquarters:** 14 Abdullah Ibrahim Close, Belgravia Valley, East London, Eastern Cape, 5241
 - **Website:** [https://zainnovate.co.za](https://zainnovate.co.za)
-- **Contact:** `procurement@zainnovate.co.za`
+- **Contact:** `procurement@zainnovate.co.za` | `contact@zainnovate.co.za`
 
 ---
 
-## 📄 License
-Proprietary software owned by ZAInnovate Technologies (Pty) Ltd. All rights reserved.
+<div align="center">
+  <sub>TenderPulse is sovereign software engineered by ZAInnovate Technologies (Pty) Ltd. Copyright © 2025–2026. All sovereign rights reserved. Built with mathematical precision in East London, South Africa.</sub>
+</div>
