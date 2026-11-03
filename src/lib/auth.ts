@@ -22,28 +22,28 @@ export const authOptions: NextAuthOptions = {
           }),
         ]
       : []),
-    CredentialsProvider({
-      name: "Contractor Terminal Access",
-      credentials: {
-        email: { label: "Email", type: "email", placeholder: "director@construction.co.za" },
-        companyName: { label: "Company Name", type: "text", placeholder: "Imvula Civil (Pty) Ltd" },
-      },
-      async authorize(credentials) {
-        if (!credentials?.email) return null;
-
-        // Frontier quick-start or authenticated user
-        return {
-          id: "usr_zainnovate_001",
-          name: credentials.companyName || "Executive Contractor",
-          email: credentials.email,
-          image: null,
-          role: "USER",
-          subscriptionTier: "PRO",
-          csdNumber: "MAAA0492104",
-          province: "Eastern Cape",
-        };
-      },
-    }),
+    ...(process.env.NODE_ENV !== "production" && process.env.ALLOW_DEMO_AUTH === "true"
+      ? [
+          CredentialsProvider({
+            name: "Development Demo Access",
+            credentials: {
+              email: { label: "Email", type: "email" },
+              companyName: { label: "Company Name", type: "text" },
+            },
+            async authorize(credentials) {
+              if (!credentials?.email) return null;
+              return {
+                id: "dev_demo_user",
+                name: credentials.companyName || "Development User",
+                email: credentials.email,
+                image: null,
+                role: "USER",
+                subscriptionTier: "FREE",
+              };
+            },
+          }),
+        ]
+      : []),
   ],
   callbacks: {
     async jwt({ token, user }) {
@@ -51,7 +51,7 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.role = (user as any).role || "USER";
         token.subscriptionTier = (user as any).subscriptionTier || "PRO";
-        token.csdNumber = (user as any).csdNumber || "MAAA0492104";
+        token.csdNumber = (user as any).csdNumber;
       }
       return token;
     },
@@ -65,5 +65,5 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
   },
-  secret: process.env.NEXTAUTH_SECRET || "tenderpulse-super-secret-key-change-in-production-2025",
+  secret: process.env.NEXTAUTH_SECRET,
 };

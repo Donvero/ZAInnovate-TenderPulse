@@ -30,39 +30,24 @@ export default function Hero() {
 
   return (
     <section className="relative overflow-hidden pt-12 pb-20 lg:pt-16 lg:pb-28 border-b border-[#15263F] bg-[#070E17]">
-      {/* Background terminal grid pattern */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#0E1B2E15_1px,transparent_1px),linear-gradient(to_bottom,#0E1B2E15_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none" />
-
-      {/* Gold ambient glow top center */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-[#FFC20E]/10 rounded-full blur-3xl pointer-events-none" />
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        {/* Top Announcement Pill */}
         <div className="flex justify-center mb-6">
-          <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-[#0E1B2E] border border-[#FFC20E]/40 shadow-gold text-xs font-mono">
-            <span className="flex h-2 w-2 relative">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#FFC20E] opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#FFC20E]" />
-            </span>
-            <span className="text-slate-300">
-              NATIONAL TREASURY & CIDB DIRECT RADAR
-            </span>
-            <span className="text-slate-500">•</span>
-            <span className="text-[#FFC20E] font-bold">1,428 ACTIVE TENDERS</span>
+          <div className="flex items-center gap-3 text-xs text-slate-400">
+            <span className="h-px w-8 bg-[#FFC20E]" />
+            <span>TenderPulse</span>
+            <span className="text-slate-600">/</span>
+            <span>South African procurement intelligence</span>
           </div>
         </div>
 
         {/* Main Headline */}
         <div className="text-center max-w-4xl mx-auto space-y-6">
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.1]">
-            Never Miss a South African Government Tender{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FFC20E] via-[#FFE45F] to-[#FFC20E]">
-              Again.
-            </span>
+            Find the tenders your business can actually pursue.
           </h1>
 
           <p className="text-base sm:text-lg text-slate-300 max-w-2xl mx-auto leading-relaxed font-sans">
-            TenderPulse monitors eTenders, CIDB, Transnet, Eskom, and all 9 provincial bulletins 24/7. Get instant WhatsApp & Email alerts matched to your CIDB grade and business profile in under 3 minutes.
+            Search public opportunities by province, category, value, and CIDB grading. Save the ones worth pursuing and keep the submission requirements in view.
           </p>
 
           {/* Quick Terminal Search Bar */}
