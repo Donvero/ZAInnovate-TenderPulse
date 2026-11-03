@@ -2,6 +2,8 @@
 // ZAInnovate Technologies (Pty) Ltd - TenderPulse
 
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 
 const DEFAULT_ALERTS = [
@@ -57,8 +59,13 @@ const DEFAULT_ALERTS = [
 
 export async function GET(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    const sessionUserId = (session?.user as { id?: string } | undefined)?.id;
+    if (!sessionUserId) {
+      return NextResponse.json({ success: false, error: "Authentication required" }, { status: 401 });
+    }
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get("userId") || "usr_zainnovate_001";
+    const userId = sessionUserId;
 
     try {
       const dbAlerts = await prisma.tenderAlert.findMany({
@@ -91,6 +98,11 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    const sessionUserId = (session?.user as { id?: string } | undefined)?.id;
+    if (!sessionUserId) {
+      return NextResponse.json({ success: false, error: "Authentication required" }, { status: 401 });
+    }
     const body = await request.json();
     const {
       id,
@@ -104,8 +116,8 @@ export async function POST(request: NextRequest) {
       sendEmail = true,
       sendWhatsapp = false,
       frequency = "INSTANT",
-      userId = "usr_zainnovate_001",
     } = body;
+    const userId = sessionUserId;
 
     if (!name) {
       return NextResponse.json({ success: false, error: "Alert name is required" }, { status: 400 });
